@@ -6,6 +6,17 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 from sklearn.metrics import r2_score
 
+def prep_data(data_dict):
+    x_train = []
+    y_train = []
+    for key, df in data_dict.items():
+        for index, row in df.iterrows():
+            y_train.append(row['NEE'])
+            sr = [row['SR_B1'], row['SR_B2'], row['SR_B3'], row['SR_B4'], row['SR_B5'], row['SR_B7']]
+            x_train.append(sr)
+    
+    return x_train, y_train
+
 class RegressionModels:
     def __init__(self, x_train, y_train, x_test, y_test):
         self.x_train = x_train
