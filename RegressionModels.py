@@ -1,4 +1,6 @@
 import numpy as np
+import random
+import pandas as pd
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet
 from sklearn.svm import SVR
@@ -6,16 +8,33 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 from sklearn.metrics import r2_score
 
-def prep_data(data_dict):
+def prep_data(data_dict, split=0.05):
     x_train = []
     y_train = []
+    x_test = []
+    y_test = []
+    
     for key, df in data_dict.items():
         for index, row in df.iterrows():
             y_train.append(row['NEE'])
             sr = [row['SR_B1'], row['SR_B2'], row['SR_B3'], row['SR_B4'], row['SR_B5'], row['SR_B7']]
             x_train.append(sr)
     
-    return x_train, y_train
+    y_train = pd.to_numeric(y_train, errors='coerce')
+    
+    x_train = np.array(x_train)
+    y_train = np.array(y_train)
+    
+    random.shuffle(x_train)
+    random.shuffle(y_train)
+    
+    index = int(len(x_train) * (1 - split))
+    x_test = x_train[index:]
+    y_test = y_train[index:]
+    x_train = x_train[:index]
+    y_train = y_train[:index]
+    
+    return x_train, x_test, y_train, y_test
 
 class RegressionModels:
     def __init__(self, x_train, y_train, x_test, y_test):
@@ -88,8 +107,8 @@ class RegressionModels:
 
     def train_ann(self):
         ann = Sequential()
-        ann.add(Dense(64, input_dim=self.x_train.shape[1], activation='relu'))
-        ann.add(Dense(32, activation='relu'))
+        ann.add(Dense(8, input_dim=self.x_train.shape[1], activation='relu'))
+        ann.add(Dense(4, activation='relu'))
         ann.add(Dense(1))
         
         ann.compile(loss='mean_squared_error', optimizer='adam')
@@ -100,6 +119,3 @@ class RegressionModels:
         
         self.models['ANN'] = ann
         self.scores['ANN'] = score
-        
-    def get_scores(self):
-        return self.scores
