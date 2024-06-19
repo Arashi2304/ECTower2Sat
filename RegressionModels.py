@@ -17,7 +17,11 @@ def prep_data(data_dict, split=0.05):
     for key, df in data_dict.items():
         for index, row in df.iterrows():
             y_train.append(row['NEE'])
-            sr = [row['SR_B1'], row['SR_B2'], row['SR_B3'], row['SR_B4'], row['SR_B5'], row['SR_B7']]
+            #sr = [row['ST_B6']]
+            sr = [row['SR_B1'], row['SR_B2'], row['SR_B3'], row['SR_B4'], row['SR_B5'], row['SR_B7'], row['ST_B6']]
+            #sr = [row['SR_B1'], row['SR_B2'], row['SR_B3'], row['SR_B4'], row['SR_B5'], row['SR_B7'], row['B1'], row['B2'], row['B3'], row['B4'], row['B5'], row['B7']]
+            #sr = [row['B1'], row['B2'], row['B3'], row['B4'], row['B5'], row['B7']]
+            #sr = [row['D1'], row['D2'], row['D3'], row['D4'], row['D5'], row['D7']]
             x_train.append(sr)
     
     y_train = pd.to_numeric(y_train, errors='coerce')
@@ -45,6 +49,7 @@ class RegressionModels:
         
         self.models = {}
         self.scores = {}
+        self.errors = {}
 
         # Train models
         self.train_random_forest()
