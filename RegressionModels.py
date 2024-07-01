@@ -4,39 +4,40 @@ import pandas as pd
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet
 from sklearn.svm import SVR
+from sklearn.utils import shuffle
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 from sklearn.metrics import r2_score
 
-def prep_data(data_dict, split=0.05):
-    x_train = []
-    y_train = []
-    x_test = []
-    y_test = []
+random.seed(42)
+
+def prep_data(data_dict, split=0.1):
+    x = []
+    y = []
     
     for key, df in data_dict.items():
         for index, row in df.iterrows():
-            y_train.append(row['NEE'])
+            y.append(row['NEE'])
+            #sr = [row['EVI'], row['NDVI']]
             #sr = [row['ST_B6']]
             sr = [row['SR_B1'], row['SR_B2'], row['SR_B3'], row['SR_B4'], row['SR_B5'], row['SR_B7'], row['ST_B6']]
             #sr = [row['SR_B1'], row['SR_B2'], row['SR_B3'], row['SR_B4'], row['SR_B5'], row['SR_B7'], row['B1'], row['B2'], row['B3'], row['B4'], row['B5'], row['B7']]
             #sr = [row['B1'], row['B2'], row['B3'], row['B4'], row['B5'], row['B7']]
             #sr = [row['D1'], row['D2'], row['D3'], row['D4'], row['D5'], row['D7']]
-            x_train.append(sr)
+            x.append(sr)
+            
+    x = np.array(x)
+    y = pd.to_numeric(y, errors='coerce')
     
-    y_train = pd.to_numeric(y_train, errors='coerce')
+    mask = ~np.isnan(y)
+    x = x[mask]
+    y = y[mask]
     
-    x_train = np.array(x_train)
-    y_train = np.array(y_train)
+    x, y = shuffle(x, y, random_state=42)
     
-    random.shuffle(x_train)
-    random.shuffle(y_train)
-    
-    index = int(len(x_train) * (1 - split))
-    x_test = x_train[index:]
-    y_test = y_train[index:]
-    x_train = x_train[:index]
-    y_train = y_train[:index]
+    split_index = int(len(x) * (1 - split))
+    x_train, x_test = x[:split_index], x[split_index:]
+    y_train, y_test = y[:split_index], y[split_index:]
     
     return x_train, x_test, y_train, y_test
 
